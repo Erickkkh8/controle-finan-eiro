@@ -48,8 +48,8 @@ function EmptyState({ icon, text }) {
 }
 
 export default function App() {
-  const [fixas, setFixas] = useState(() => JSON.parse(localStorage.getItem("fixas") || "[]"));
-  const [mensais, setMensais] = useState(() => JSON.parse(localStorage.getItem("mensais") || "[]"));
+ 
+  const [fixas, setFixas] = useState(() => JSON.parse(localStorage.getItem("fixas") || "[]"));onst [mensais, setMensais] = useState(() => JSON.parse(localStorage.getItem("mensais") || "[]"));
   const [income, setIncome] = useState(() => parseFloat(localStorage.getItem("income") || "0"));
   const [tab, setTab] = useState("fixas");
   const [shakeFixa, setShakeFixa] = useState(false);
