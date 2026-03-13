@@ -21,6 +21,8 @@ export default function App() {
   const totalFixas = fixas.reduce((s, f) => s + f.val, 0);
   const totalMensais = mensais.reduce((s, m) => s + m.val, 0);
   const totalGasto = totalFixas + totalMensais;
+  const sobrou = income - totalGasto;
+  const pct = income > 0 ? Math.min(100, Math.round((totalGasto / income) * 100)) : 0;
   const data = new Date().toLocaleDateString("pt-BR");
 
   useEffect(() => {
@@ -57,9 +59,9 @@ export default function App() {
           <label className="text-xs"> Defina quanto você recebe por mês</label>
         </div>
 
-        <section className="flex gap-4 p-6  max-w-500">
+        <section className="flex gap-4 p-6   max-w-500">
           {/* card gasto total */}
-          <div className="bg-white w-58 h-40 rounded-2xl p-4">
+          <div className="bg-white w-60 w-max-60 h-40 rounded-2xl p-4">
             <div className="text-2xl mb-1">📉</div>
             <div className="text-xs font-medium text-slate-400 uppercase mb-2">
               Total Gasto
@@ -71,13 +73,24 @@ export default function App() {
               Fixas: {fmt(totalFixas)} · Mensais: {fmt(totalMensais)}
             </div>
           </div>
+           
+           {/* card renda restante */}
+            <div className="bg-white border w-max-60 w-60 border-slate-200 rounded-2xl p-5 shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-200">
+            <div className="w-9 h-9 rounded-xl bg-green-50 text-green-600 flex items-center justify-center text-base mb-3">💵</div>
+            <div className="text-xs font-medium uppercase tracking-wider text-slate-400 mb-2">Disponível</div>
+            <div className="sora text-2xl font-bold text-green-500 leading-none">{fmt(income)}</div>
+            <div className="text-xs text-slate-300 mt-1.5">Renda informada</div>
+          </div>
+          {/* card sobrou */}
+           <div className="rounded-2xl p-5  w-60 w-max-60 shadow-md hover:-translate-y-0.5 hover:shadow-lg transition-all duration-200" style={{ background: "linear-gradient(135deg, #5b5ef4 0%, #9b59f5 100%)" }}>
+            <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center text-base mb-3">✨</div>
+            <div className="text-xs font-medium uppercase tracking-wider text-white/70 mb-2">Sobrou</div>
+            <div className={`sora text-2xl font-bold leading-none ${sobrou < 0 ? "text-red-300" : "text-white"}`}>{fmt(sobrou)}</div>
+            <div className="text-xs text-white/60 mt-1.5">
+              {income > 0 ? `${100 - pct}% do orçamento livre` : "Informe sua renda"}
+            </div>
+            </div>
 
-          <div className="bg-white w-58 h-40 rounded-2xl justify-center ">
-            sasaa
-          </div>
-          <div className="bg-fuchsia-500 w-58 h-40 rounded-2xl justify-center">
-            sasaasa
-          </div>
         </section>
       </div>
     </>
