@@ -7,6 +7,55 @@ const fmt = (n) =>
     maximumFractionDigits: 2,
   });
 
+const CAT_FIXAS = [
+  "🏠 Moradia", "💡 Energia/Água", "📱 Telefone/Net", "🚗 Transporte",
+  "🏥 Saúde", "📚 Educação", "🔒 Seguro", "📦 Outros",
+];
+const CAT_MENSAIS = [
+  "🛒 Alimentação", "🎮 Lazer", "👗 Vestuário", "💊 Farmácia",
+  "🚕 Transporte", "🍕 Delivery", "🎁 Presente", "📦 Outros",
+];
+const ICON_COLORS = {
+  "🏠": "bg-violet-100 text-violet-700", "💡": "bg-yellow-100 text-yellow-700",
+  "📱": "bg-blue-100 text-blue-700",    "🚗": "bg-green-100 text-green-700",
+  "🏥": "bg-red-100 text-red-700",      "📚": "bg-violet-100 text-violet-700",
+  "🔒": "bg-slate-100 text-slate-500",  "🛒": "bg-pink-100 text-pink-700",
+  "🎮": "bg-sky-100 text-sky-700",      "👗": "bg-fuchsia-100 text-fuchsia-700",
+  "💊": "bg-red-100 text-red-700",      "🍕": "bg-orange-100 text-orange-700",
+  "🎁": "bg-pink-100 text-pink-700",    "🚕": "bg-green-100 text-green-700",
+  "📦": "bg-slate-100 text-slate-500",
+};
+const iconColor = (cat) => ICON_COLORS[cat.split(" ")[0]] || "bg-slate-100 text-slate-500";
+
+function ItemRow({ item, onDelete }) {
+  const emoji = item.cat.split(" ")[0];
+  return (
+    <div className="flex items-center gap-3 bg-white border border-slate-200 rounded-xl px-4 py-3 hover:shadow-md hover:translate-x-0.5 transition-all duration-200">
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-base flex-shrink-0 ${iconColor(item.cat)}`}>
+        {emoji}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="font-medium text-sm text-slate-800 truncate">{item.nome}</div>
+        <div className="text-xs text-slate-400 mt-0.5">{item.cat}</div>
+      </div>
+      <div className="font-semibold text-sm text-red-500 ml-auto mr-3 font-mono">{fmt(item.val)}</div>
+      <button
+        onClick={() => onDelete(item.id)}
+        className="text-xs bg-red-50 text-red-400 border border-red-100 rounded-lg px-3 py-1.5 hover:bg-red-500 hover:text-white hover:border-red-500 transition-all duration-150"
+      >✕</button>
+    </div>
+  );
+}
+
+function EmptyState({ icon, text }) {
+  return (
+    <div className="text-center py-12 px-6 text-slate-300 bg-white border-2 border-dashed border-slate-200 rounded-xl">
+      <div className="text-4xl mb-2 opacity-50">{icon}</div>
+      <p className="text-sm" dangerouslySetInnerHTML={{ __html: text }} />
+    </div>
+  );
+}
+
 export default function App() {
   const [fixas, setFixas] = useState(() =>
     JSON.parse(localStorage.getItem("fixas") || "[]")
@@ -20,6 +69,14 @@ export default function App() {
   const [tab, setTab] = useState("fixas");
   const [nome, setNome] = useState("");
   const [val, setVal] = useState("");
+  const [cat, setCat] = useState(CAT_FIXAS[0]);
+
+  const catList = tab === "fixas" ? CAT_FIXAS : CAT_MENSAIS;
+
+  // Quando muda de tab, reseta categoria para o primeiro item da nova lista
+  useEffect(() => {
+    setCat(tab === "fixas" ? CAT_FIXAS[0] : CAT_MENSAIS[0]);
+  }, [tab]);
 
   const totalFixas = fixas.reduce((s, f) => s + f.val, 0);
   const totalMensais = mensais.reduce((s, m) => s + m.val, 0);
@@ -38,7 +95,7 @@ export default function App() {
   function addItem() {
     const v = parseFloat(val);
     if (!nome.trim() || isNaN(v) || v <= 0) return;
-    setLista((prev) => [...prev, { id: Date.now(), nome: nome.trim(), val: v }]);
+    setLista((prev) => [...prev, { id: Date.now(), nome: nome.trim(), cat, val: v }]);
     setNome("");
     setVal("");
   }
@@ -46,6 +103,13 @@ export default function App() {
   function removeItem(id) {
     setLista((prev) => prev.filter((item) => item.id !== id));
   }
+
+  const emptyIcon = tab === "fixas" ? "📌" : "🛒";
+  const emptyText = tab === "fixas"
+    ? "Nenhuma conta fixa ainda.<br/>Adicione suas contas recorrentes acima."
+    : "Nenhum gasto mensal ainda.<br/>Adicione seus gastos variáveis acima.";
+  const totalAtual = tab === "fixas" ? totalFixas : totalMensais;
+  const totalLabel = tab === "fixas" ? "Total em contas fixas" : "Total em gastos mensais";
 
   return (
     <>
@@ -142,15 +206,22 @@ export default function App() {
         {/* painel da lista */}
         <div className="bg-white border border-slate-200 rounded-2xl w-full overflow-hidden">
           {/* formulário de adição */}
-          <div className="flex gap-2 p-4 border-b border-slate-100">
+          <div className="flex flex-wrap gap-2 p-4 border-b border-slate-100">
             <input
               type="text"
               value={nome}
               onChange={(e) => setNome(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && addItem()}
               placeholder="Nome da despesa"
-              className="flex-1 border border-slate-200 rounded-xl px-4 py-2 text-sm outline-none focus:border-indigo-400"
+              className="flex-1 min-w-32 border border-slate-200 rounded-xl px-4 py-2 text-sm outline-none focus:border-indigo-400"
             />
+            <select
+              value={cat}
+              onChange={(e) => setCat(e.target.value)}
+              className="border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-indigo-400 bg-white text-slate-700"
+            >
+              {catList.map((c) => <option key={c}>{c}</option>)}
+            </select>
             <input
               type="number"
               value={val}
@@ -168,29 +239,21 @@ export default function App() {
           </div>
 
           {/* itens */}
-          {lista.length === 0 ? (
-            <p className="text-center text-sm text-slate-300 py-8">Nenhuma despesa cadastrada</p>
-          ) : (
-            <ul>
-              {lista.map((item) => (
-                <li
-                  key={item.id}
-                  className="flex items-center justify-between px-5 py-3 border-b border-slate-50 hover:bg-slate-50 transition-colors last:border-0"
-                >
-                  <span className="text-sm text-slate-700">{item.nome}</span>
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-medium text-slate-700">{fmt(item.val)}</span>
-                    <button
-                      onClick={() => removeItem(item.id)}
-                      className="text-slate-300 hover:text-red-400 transition-colors text-sm px-1"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
+          <div className="p-3 flex flex-col gap-2">
+            {lista.length === 0 ? (
+              <EmptyState icon={emptyIcon} text={emptyText} />
+            ) : (
+              <>
+                {lista.map((item) => (
+                  <ItemRow key={item.id} item={item} onDelete={removeItem} />
+                ))}
+                <div className="flex items-center justify-between px-4 py-3.5 bg-indigo-50 border border-indigo-200 rounded-xl mt-1">
+                  <span className="font-semibold text-sm text-indigo-700">{totalLabel}</span>
+                  <strong className="text-base text-indigo-700">{fmt(totalAtual)}</strong>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </>
