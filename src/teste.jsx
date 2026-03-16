@@ -304,23 +304,37 @@ export default function App() {
               )}
             </div>
 
-            {mensais.length === 0 ? (
-              <EmptyState icon="🛒" text="Nenhum gasto mensal ainda.<br/>Adicione seus gastos variáveis acima." />
-            ) : (
-              <div className="flex flex-col gap-2.5">
-                {mensais.map((m) => (
-                  <div key={m.id} className="slide-in">
-                    <ItemRow item={m} onDelete={(id) => setMensais(mensais.filter((x) => x.id !== id))} />
-                  </div>
-                ))}
-                <div className="flex items-center justify-between px-4 py-3.5 bg-indigo-50 border border-indigo-200 rounded-xl mt-2">
-                  <span className="font-semibold text-sm text-indigo-700">Total em gastos mensais</span>
-                  <strong className="sora text-base text-indigo-700">{fmt(totalMensais)}</strong>
-                </div>
-              </div>
-            )}
+      {mensais.length === 0 ? (
+  <EmptyState icon="🛒" text="Nenhum gasto mensal ainda.<br/>Adicione seus gastos variáveis acima." />
+) : (
+  <div className="flex flex-col gap-2.5">
+    {mensais.map((m) => (
+      <div key={m.id} className="slide-in">
+        <div className="flex items-center gap-3 bg-white border border-slate-200 rounded-xl px-4 py-3 hover:shadow-md hover:translate-x-0.5 transition-all duration-200">
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-base flex-shrink-0 ${iconColor(m.cat)}`}>
+            {m.cat.split(" ")[0]}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="font-medium text-sm text-slate-800 truncate">{m.nome}</div>
+            <div className="text-xs text-slate-400 mt-0.5">{m.cat}</div>
+          </div>
+          <div className="font-semibold text-sm text-red-500 ml-auto mr-3 font-mono">{fmt(m.val)}</div>
+          <button
+            onClick={() => setMensais(mensais.filter((x) => x.id !== m.id))}
+            className="text-xs bg-red-50 text-red-400 border border-red-100 rounded-lg px-3 py-1.5 hover:bg-red-500 hover:text-white hover:border-red-500 transition-all duration-150"
+          >✕</button>
+        </div>
+      </div>
+    ))}
+    <div className="flex items-center justify-between px-4 py-3.5 bg-indigo-50 border border-indigo-200 rounded-xl mt-2">
+      <span className="font-semibold text-sm text-indigo-700">Total em gastos mensais</span>
+      <strong className="sora text-base text-indigo-700">{fmt(totalMensais)}</strong>
+    </div>
+  </div>
+)}
           </div>
         )}
+
       </main>
     </div>
   );
